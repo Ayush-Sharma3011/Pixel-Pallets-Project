@@ -28,7 +28,7 @@
         <div class="flex justify-between items-center">
             <div class="flex items-center">
                 <a href="index.html">
-                    <img src="bizfusion_refined.png" alt="Biz-Fusion Logo" class="h-10">
+                    <img src="public/images/bizfusion_refined.png" alt="Biz-Fusion Logo" class="h-10">
                 </a>
                 <span class="ml-3 text-xl font-semibold">Biz-Fusion</span>
             </div>
@@ -98,8 +98,8 @@
             <div class="mt-8 text-center">
                 <p class="text-gray-400">Don't have an account?</p>
                 <div class="mt-4 flex space-x-4 justify-center">
-                    <a href="startup-register.html" class="text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary hover:bg-opacity-10 transition">Register as Startup</a>
-                    <a href="corporate-register.html" class="text-secondary border border-secondary px-4 py-2 rounded-lg hover:bg-secondary hover:bg-opacity-10 transition">Register as Corporate</a>
+                    <a href="#" class="text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary hover:bg-opacity-10 transition">Register as Startup</a>
+                    <a href="#" class="text-secondary border border-secondary px-4 py-2 rounded-lg hover:bg-secondary hover:bg-opacity-10 transition">Register as Corporate</a>
                 </div>
             </div>
         </div>
@@ -122,9 +122,9 @@
             
             // For demonstration purposes only
             if (email.includes('startup')) {
-                window.location.href = 'startup-dashboard.html';
+                window.location.href = 'dashboard/startup.html';
             } else if (email.includes('corporate')) {
-                window.location.href = 'corporate-dashboard.html';
+                window.location.href = 'dashboard/corporate.html';
             } else {
                 alert('Please use an email containing "startup" or "corporate" for this demo');
             }
