@@ -13,9 +13,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Check if user is logged in
 $is_logged_in = isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true;
-$user_type = $is_logged_in ? $_SESSION['user_type'] : '';
-$total_points = $is_logged_in ? $_SESSION['total_points'] : 0;
-$username = $is_logged_in ? $_SESSION['username'] : '';
+$user_type = $is_logged_in ? (isset($_SESSION['user_type']) ? $_SESSION['user_type'] : '') : '';
+$total_points = $is_logged_in ? (isset($_SESSION['total_points']) ? $_SESSION['total_points'] : 0) : 0;
+$username = $is_logged_in ? (isset($_SESSION['username']) ? $_SESSION['username'] : '') : '';
 
 // Get page title
 $page_title = isset($page_title) ? $page_title . ' - Biz-Fusion' : 'Biz-Fusion';
