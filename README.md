@@ -105,6 +105,6 @@ git clone https://github.com/yourusername/biz-fusion.git
 
 ## Credits
 
-- Developed by [Your Name]
-- Logo and branding assets by [Designer Name]
+- Developed by [Ayush Sharma , Kartik Choudhary, Rohit Kumar]
+- Logo and branding assets by [Ayush Sharma]
 - Icons from [Heroicons](https://heroicons.com/)
