@@ -1,3 +1,17 @@
+<?php
+// Include database connection
+require_once 'backend/config/database.php';
+$database = new Database();
+$conn = $database->getConnection();
+
+// Check if database exists, if not redirect to setup
+$check_db = $conn->prepare("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'bizfusion'");
+$check_db->execute();
+if ($check_db->rowCount() == 0) {
+    header("Location: setup.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,20 +41,20 @@
     <nav class="container mx-auto px-6 py-4">
         <div class="flex justify-between items-center">
             <div class="flex items-center">
-                <a href="index.html">
+                <a href="index.php">
                     <img src="public/images/bizfusion_refined.png" alt="Biz-Fusion Logo" class="h-10">
                 </a>
                 <span class="ml-3 text-xl font-semibold">Biz-Fusion</span>
             </div>
             <div class="hidden md:flex space-x-8">
-                <a href="index.html" class="text-primary transition">Home</a>
-                <a href="about.html" class="hover:text-primary transition">About</a>
-                <a href="services.html" class="hover:text-primary transition">Services</a>
-                <a href="success-stories.html" class="hover:text-primary transition">Success Stories</a>
-                <a href="contact.html" class="hover:text-primary transition">Contact</a>
+                <a href="index.php" class="text-primary transition">Home</a>
+                <a href="about.php" class="hover:text-primary transition">About</a>
+                <a href="services.php" class="hover:text-primary transition">Services</a>
+                <a href="success-stories.php" class="hover:text-primary transition">Success Stories</a>
+                <a href="contact.php" class="hover:text-primary transition">Contact</a>
             </div>
             <div>
-                <a href="login.html" class="bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-full transition">Sign In</a>
+                <a href="login.php" class="bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-full transition">Sign In</a>
             </div>
         </div>
     </nav>
@@ -52,8 +66,8 @@
                 <h1 class="font-['Playfair_Display'] text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Connecting <span class="text-primary">Startups</span> with <span class="text-secondary">Corporates</span></h1>
                 <p class="text-gray-300 mb-8 text-lg">Biz-Fusion bridges the gap between innovative startups and established corporations, creating powerful partnerships that drive growth and innovation.</p>
                 <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                    <a href="login.html" class="bg-primary hover:bg-opacity-90 text-white px-8 py-3 rounded-full transition font-medium text-center">Get Started</a>
-                    <a href="services.html" class="border border-white hover:border-primary hover:text-primary px-8 py-3 rounded-full transition font-medium text-center">Learn More</a>
+                    <a href="login.php" class="bg-primary hover:bg-opacity-90 text-white px-8 py-3 rounded-full transition font-medium text-center">Get Started</a>
+                    <a href="services.php" class="border border-white hover:border-primary hover:text-primary px-8 py-3 rounded-full transition font-medium text-center">Learn More</a>
                 </div>
             </div>
             <div class="md:w-1/2 flex justify-center">
@@ -122,13 +136,39 @@
             </div>
         </div>
         <div class="text-center mt-12">
-            <a href="login.html" class="bg-primary hover:bg-opacity-90 text-white px-8 py-3 rounded-full transition font-medium">Start Your Journey</a>
+            <a href="login.php" class="bg-primary hover:bg-opacity-90 text-white px-8 py-3 rounded-full transition font-medium">Start Your Journey</a>
         </div>
     </section>
 
     <!-- Testimonials -->
     <section class="container mx-auto px-6 py-16">
         <h2 class="text-3xl font-['Playfair_Display'] font-bold text-center mb-12">Success Stories</h2>
+        <?php
+        // Fetch success stories from the database
+        try {
+            $stmt = $conn->prepare("SELECT * FROM success_stories LIMIT 2");
+            $stmt->execute();
+            
+            if ($stmt->rowCount() > 0) {
+                echo '<div class="grid grid-cols-1 md:grid-cols-2 gap-8">';
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    echo '<div class="bg-dark bg-opacity-50 p-8 rounded-xl">';
+                    echo '<div class="flex items-center mb-4">';
+                    echo '<div class="w-12 h-12 bg-gray-600 rounded-full mr-4">';
+                    if (!empty($row['image_url'])) {
+                        echo '<img src="' . htmlspecialchars($row['image_url']) . '" alt="Company Logo" class="w-full h-full rounded-full object-cover">';
+                    }
+                    echo '</div>';
+                    echo '<div>';
+                    echo '<h4 class="font-semibold">' . htmlspecialchars($row['title']) . '</h4>';
+                    echo '</div>';
+                    echo '</div>';
+                    echo '<p class="text-gray-300">' . htmlspecialchars($row['description']) . '</p>';
+                    echo '</div>';
+                }
+                echo '</div>';
+            } else {
+        ?>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="bg-dark bg-opacity-50 p-8 rounded-xl">
                 <div class="flex items-center mb-4">
@@ -151,8 +191,15 @@
                 <p class="text-gray-300">"We found three innovative startups through Biz-Fusion that helped us transform our digital strategy. The platform made the entire process seamless."</p>
             </div>
         </div>
+        <?php
+            }
+        } catch(PDOException $e) {
+            // Default content if there's an error
+            echo '<div class="text-center">Failed to load success stories. Please check back later.</div>';
+        }
+        ?>
         <div class="text-center mt-8">
-            <a href="success-stories.html" class="text-primary hover:underline">View all success stories →</a>
+            <a href="success-stories.php" class="text-primary hover:underline">View all success stories →</a>
         </div>
     </section>
 
@@ -162,8 +209,8 @@
             <h2 class="text-3xl font-['Playfair_Display'] font-bold mb-6">Ready to Transform Your Business?</h2>
             <p class="text-xl mb-8 max-w-2xl mx-auto">Join thousands of businesses already collaborating and growing through Biz-Fusion's powerful network.</p>
             <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <a href="lib/auth/startup-register.html" class="bg-white text-primary hover:bg-opacity-90 px-8 py-3 rounded-full transition font-medium">Register as Startup</a>
-                <a href="lib/auth/corporate-register.html" class="border border-white hover:bg-white hover:bg-opacity-10 px-8 py-3 rounded-full transition font-medium">Register as Corporate</a>
+                <a href="lib/auth/startup-register.php" class="bg-white text-primary hover:bg-opacity-90 px-8 py-3 rounded-full transition font-medium">Register as Startup</a>
+                <a href="lib/auth/corporate-register.php" class="border border-white hover:bg-white hover:bg-opacity-10 px-8 py-3 rounded-full transition font-medium">Register as Corporate</a>
             </div>
         </div>
     </section>
@@ -179,11 +226,11 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
                     <ul class="space-y-2 text-gray-400">
-                        <li><a href="index.html" class="hover:text-primary transition">Home</a></li>
-                        <li><a href="about.html" class="hover:text-primary transition">About Us</a></li>
-                        <li><a href="services.html" class="hover:text-primary transition">Services</a></li>
-                        <li><a href="success-stories.html" class="hover:text-primary transition">Success Stories</a></li>
-                        <li><a href="contact.html" class="hover:text-primary transition">Contact</a></li>
+                        <li><a href="index.php" class="hover:text-primary transition">Home</a></li>
+                        <li><a href="about.php" class="hover:text-primary transition">About Us</a></li>
+                        <li><a href="services.php" class="hover:text-primary transition">Services</a></li>
+                        <li><a href="success-stories.php" class="hover:text-primary transition">Success Stories</a></li>
+                        <li><a href="contact.php" class="hover:text-primary transition">Contact</a></li>
                     </ul>
                 </div>
                 <div>
@@ -198,16 +245,16 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Contact</h4>
                     <ul class="space-y-2 text-gray-400">
-                        <li>info@bizfusion.com</li>
-                        <li>+1 (555) 123-4567</li>
+                        <li>sharmaayush300424@gmail.com</li>
+                        <li>+91 7060584421</li>
                         <li>123 Innovation Street, San Francisco, CA 94103</li>
                     </ul>
                 </div>
             </div>
             <div class="border-t border-gray-800 pt-8 text-center text-gray-500">
-                <p>&copy; 2023 Biz-Fusion. All rights reserved.</p>
+                <p>&copy; <?php echo date('Y'); ?> Biz-Fusion. All rights reserved.</p>
             </div>
         </div>
     </footer>
 </body>
-</html>
+</html> 

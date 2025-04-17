@@ -1,80 +1,89 @@
 <?php
 session_start();
-require_once 'config.php';
-require_once 'points_system.php';
 
-// Check if form is submitted
+// Include database connection
+require_once '../../backend/config/database.php';
+$database = new Database();
+$conn = $database->getConnection();
+
+// Process login if form submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get email and password from form
-    $email = $_POST['email'];
-    $password = $_POST['password'];
     
-    // Validate input
-    if (empty($email) || empty($password)) {
-        $_SESSION['login_error'] = "Please enter both email and password.";
-        header("Location: login.html");
+    // Check if email and password are set
+    if (empty($_POST["email"]) || empty($_POST["password"])) {
+        $_SESSION["login_error"] = "Please enter both email and password.";
+        header("Location: ../../login.php");
         exit();
     }
     
-    // Prepare SQL statement to prevent SQL injection
-    $stmt = $conn->prepare("SELECT id, username, password, user_type, total_points FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $email = trim($_POST["email"]);
+    $password = trim($_POST["password"]);
     
-    // Check if user exists
-    if ($result->num_rows == 1) {
-        $user = $result->fetch_assoc();
+    // Prepare a select statement
+    $sql = "SELECT id, username, email, password, role, user_type FROM users WHERE email = :email";
+    
+    if ($stmt = $conn->prepare($sql)) {
+        // Bind variables to the prepared statement as parameters
+        $stmt->bindParam(":email", $email, PDO::PARAM_STR);
         
-        // Verify password
-        if (password_verify($password, $user['password'])) {
-            // Password is correct, start a new session
-            session_regenerate_id();
-            
-            // Store user data in session variables
-            $_SESSION['loggedin'] = true;
-            $_SESSION['id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['user_type'] = $user['user_type'];
-            $_SESSION['total_points'] = $user['total_points'];
-            
-            // Update last login time
-            $updateStmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
-            $updateStmt->bind_param("i", $user['id']);
-            $updateStmt->execute();
-            
-            // Award points for daily login
-            $pointsSystem = new PointsSystem($conn);
-            $pointsAwarded = $pointsSystem->awardLoginPoints($user['id']);
-            
-            if ($pointsAwarded) {
-                $_SESSION['points_message'] = "You earned " . POINTS_LOGIN . " points for logging in today!";
-                // Update session points
-                $_SESSION['total_points'] += POINTS_LOGIN;
-            }
-            
-            // Redirect based on user type
-            if ($user['user_type'] == 'startup') {
-                header("Location: startup-dashboard.html");
+        // Attempt to execute the prepared statement
+        if ($stmt->execute()) {
+            // Check if email exists
+            if ($stmt->rowCount() == 1) {
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                $id = $row["id"];
+                $username = $row["username"];
+                $email = $row["email"];
+                $hashed_password = $row["password"];
+                $role = $row["role"];
+                $user_type = $row["user_type"];
+                
+                // Verify password
+                if (password_verify($password, $hashed_password)) {
+                    // Password is correct, start a new session
+                    session_start();
+                    
+                    // Store data in session variables
+                    $_SESSION["loggedin"] = true;
+                    $_SESSION["id"] = $id;
+                    $_SESSION["username"] = $username;
+                    $_SESSION["email"] = $email;
+                    $_SESSION["role"] = $role;
+                    $_SESSION["user_type"] = $user_type;
+                    
+                    // Record login points
+                    // TODO: Implement this with points system
+                    
+                    // Redirect user to dashboard based on user type
+                    if ($user_type == "startup") {
+                        header("Location: ../../dashboard/startup.php");
+                    } else {
+                        header("Location: ../../dashboard/corporate.php");
+                    }
+                } else {
+                    // Password is not valid
+                    $_SESSION["login_error"] = "Invalid email or password.";
+                    header("Location: ../../login.php");
+                }
             } else {
-                header("Location: corporate-dashboard.html");
+                // Email doesn't exist
+                $_SESSION["login_error"] = "Invalid email or password.";
+                header("Location: ../../login.php");
             }
-            exit();
         } else {
-            // Password is incorrect
-            $_SESSION['login_error'] = "Invalid email or password.";
-            header("Location: login.html");
-            exit();
+            $_SESSION["login_error"] = "Oops! Something went wrong. Please try again later.";
+            header("Location: ../../login.php");
         }
-    } else {
-        // User doesn't exist
-        $_SESSION['login_error'] = "Invalid email or password.";
-        header("Location: login.html");
-        exit();
+        
+        // Close statement
+        unset($stmt);
     }
+    
+    // Close connection
+    unset($conn);
 } else {
     // Not a POST request, redirect to login page
-    header("Location: login.html");
+    header("Location: ../../login.php");
     exit();
 }
 ?> 

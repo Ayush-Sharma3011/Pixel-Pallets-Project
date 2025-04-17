@@ -1,94 +1,67 @@
 <?php
+// Start session
 session_start();
-require_once 'config.php';
-require_once 'points_system.php';
 
 // Check if user is logged in
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: login.html");
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("Location: ../../login.php");
     exit();
 }
 
-$user_id = $_SESSION['id'];
-$user_type = $_SESSION['user_type'];
-$total_points = $_SESSION['total_points'];
+// Include database connection
+require_once '../../backend/config/database.php';
+$database = new Database();
+$conn = $database->getConnection();
 
-// Handle reward redemption
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['redeem_reward'])) {
-    $reward_id = $_POST['reward_id'];
-    
-    // Verify reward exists and user has enough points
-    $stmt = $conn->prepare("SELECT id, name, points_required FROM rewards WHERE id = ? AND is_active = 1");
-    $stmt->bind_param("i", $reward_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows == 1) {
-        $reward = $result->fetch_assoc();
-        
-        if ($total_points >= $reward['points_required']) {
-            // Deduct points from user
-            $deductStmt = $conn->prepare("UPDATE users SET total_points = total_points - ? WHERE id = ?");
-            $deductStmt->bind_param("ii", $reward['points_required'], $user_id);
-            $deductStmt->execute();
-            
-            // Log the points deduction
-            $pointsSystem = new PointsSystem($conn);
-            $activity = "Redeemed reward: " . $reward['name'];
-            $pointsSystem->awardPoints($user_id, -$reward['points_required'], $activity);
-            
-            // Record the redemption
-            $redeemStmt = $conn->prepare("INSERT INTO user_rewards (user_id, reward_id) VALUES (?, ?)");
-            $redeemStmt->bind_param("ii", $user_id, $reward_id);
-            $redeemStmt->execute();
-            
-            // Update session points
-            $_SESSION['total_points'] -= $reward['points_required'];
-            $total_points = $_SESSION['total_points'];
-            
-            $_SESSION['reward_success'] = "You have successfully redeemed the reward: " . $reward['name'];
-        } else {
-            $_SESSION['reward_error'] = "You don't have enough points to redeem this reward.";
-        }
-    } else {
-        $_SESSION['reward_error'] = "Invalid reward selection.";
-    }
+// Check if rewards table exists
+$stmt = $conn->prepare("SHOW TABLES LIKE 'rewards'");
+$stmt->execute();
+if ($stmt->rowCount() == 0) {
+    // Rewards table doesn't exist, redirect to setup
+    header("Location: setup.php");
+    exit();
 }
 
-// Get available rewards
-$rewardsStmt = $conn->prepare("SELECT id, name, description, points_required FROM rewards WHERE is_active = 1 ORDER BY points_required ASC");
-$rewardsStmt->execute();
-$rewardsResult = $rewardsStmt->get_result();
+// Include rewards system
+require_once 'RewardsSystem.php';
+$rewardsSystem = new RewardsSystem($conn);
 
-// Get user's redeemed rewards
-$redeemedStmt = $conn->prepare("
-    SELECT r.name, r.description, ur.redeemed_date, ur.status 
-    FROM user_rewards ur
-    JOIN rewards r ON ur.reward_id = r.id
-    WHERE ur.user_id = ?
-    ORDER BY ur.redeemed_date DESC
-");
-$redeemedStmt->bind_param("i", $user_id);
-$redeemedStmt->execute();
-$redeemedResult = $redeemedStmt->get_result();
-
-// Get points history
+// Include points system
+require_once '../points/PointsSystem.php';
 $pointsSystem = new PointsSystem($conn);
-$pointsHistory = $pointsSystem->getPointsHistory($user_id, 5);
 
-// Get leaderboard
-$leaderboard = $pointsSystem->getLeaderboard(5);
+// Get user data
+$user_id = $_SESSION["id"];
+$user_type = $_SESSION["user_type"];
+$total_points = $pointsSystem->getUserPoints($user_id);
 
+// Filter and sorting parameters
+$category = isset($_GET['category']) ? $_GET['category'] : 'all';
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
+
+// Get rewards with pagination
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$records_per_page = 9;
+$offset = ($page - 1) * $records_per_page;
+
+$available_rewards = $rewardsSystem->getAvailableRewards($user_type, $category, $sort, $records_per_page, $offset);
+$total_rewards = $rewardsSystem->countAvailableRewards($user_type, $category);
+$total_pages = ceil($total_rewards / $records_per_page);
+
+// Get categories for filter
+$categories = $rewardsSystem->getCategories();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rewards - Biz-Fusion</title>
+    <title>Rewards Center - Biz-Fusion</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -109,183 +82,164 @@ $leaderboard = $pointsSystem->getLeaderboard(5);
     <nav class="container mx-auto px-6 py-4">
         <div class="flex justify-between items-center">
             <div class="flex items-center">
-                <a href="index.html">
-                    <img src="bizfusion_refined.png" alt="Biz-Fusion Logo" class="h-10">
+                <a href="../../index.php">
+                    <img src="../../public/images/bizfusion_refined.png" alt="Biz-Fusion Logo" class="h-10">
                 </a>
                 <span class="ml-3 text-xl font-semibold">Biz-Fusion</span>
             </div>
             <div class="hidden md:flex space-x-8">
-                <?php if ($user_type == 'startup'): ?>
-                    <a href="startup-dashboard.html" class="hover:text-primary transition">Dashboard</a>
-                <?php else: ?>
-                    <a href="corporate-dashboard.html" class="hover:text-primary transition">Dashboard</a>
-                <?php endif; ?>
-                <a href="#" class="text-primary transition">Rewards</a>
-                <a href="profile.php" class="hover:text-primary transition">Profile</a>
+                <a href="../../dashboard/<?php echo $user_type; ?>.php" class="hover:text-primary transition">Dashboard</a>
+                <a href="index.php" class="text-primary transition">Rewards Center</a>
+                <a href="redemption-history.php" class="hover:text-primary transition">Redemption History</a>
+                <a href="../../dashboard/profile.php" class="hover:text-primary transition">Profile</a>
             </div>
-            <div class="flex items-center">
-                <div class="mr-4 bg-dark bg-opacity-50 px-4 py-2 rounded-full">
-                    <span class="text-yellow-400 font-semibold"><?php echo $total_points; ?></span> points
-                </div>
-                <a href="logout.php" class="bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-full transition">Sign Out</a>
+            <div>
+                <a href="../../logout.php" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full transition">Sign Out</a>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
     <div class="container mx-auto px-6 py-8">
-        <!-- Alerts -->
-        <?php if (isset($_SESSION['reward_success'])): ?>
-            <div class="bg-green-500 bg-opacity-20 border border-green-500 text-green-500 px-4 py-3 rounded mb-6">
-                <?php echo $_SESSION['reward_success']; ?>
-                <?php unset($_SESSION['reward_success']); ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (isset($_SESSION['reward_error'])): ?>
-            <div class="bg-red-500 bg-opacity-20 border border-red-500 text-red-500 px-4 py-3 rounded mb-6">
-                <?php echo $_SESSION['reward_error']; ?>
-                <?php unset($_SESSION['reward_error']); ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (isset($_SESSION['points_message'])): ?>
-            <div class="bg-blue-500 bg-opacity-20 border border-blue-500 text-blue-500 px-4 py-3 rounded mb-6">
-                <?php echo $_SESSION['points_message']; ?>
-                <?php unset($_SESSION['points_message']); ?>
-            </div>
-        <?php endif; ?>
-        
-        <h1 class="font-['Playfair_Display'] text-4xl font-bold mb-8">Rewards Center</h1>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column: Available Rewards -->
-            <div class="lg:col-span-2">
-                <div class="bg-dark bg-opacity-50 rounded-xl p-6 mb-8">
-                    <h2 class="text-2xl font-semibold mb-6">Available Rewards</h2>
-                    
-                    <?php if ($rewardsResult->num_rows > 0): ?>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <?php while ($reward = $rewardsResult->fetch_assoc()): ?>
-                                <div class="bg-dark bg-opacity-70 rounded-lg p-6 border border-gray-800">
-                                    <h3 class="text-xl font-semibold mb-2"><?php echo htmlspecialchars($reward['name']); ?></h3>
-                                    <p class="text-gray-300 mb-4"><?php echo htmlspecialchars($reward['description']); ?></p>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-yellow-400 font-semibold"><?php echo $reward['points_required']; ?> points</span>
-                                        <form method="post" action="">
-                                            <input type="hidden" name="reward_id" value="<?php echo $reward['id']; ?>">
-                                            <button type="submit" name="redeem_reward" 
-                                                class="<?php echo ($total_points >= $reward['points_required']) ? 'bg-primary hover:bg-opacity-90' : 'bg-gray-700 cursor-not-allowed'; ?> text-white px-4 py-2 rounded-lg transition"
-                                                <?php echo ($total_points >= $reward['points_required']) ? '' : 'disabled'; ?>>
-                                                Redeem
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            <?php endwhile; ?>
-                        </div>
-                    <?php else: ?>
-                        <p class="text-gray-400">No rewards available at the moment.</p>
-                    <?php endif; ?>
-                </div>
-                
-                <!-- Redeemed Rewards -->
-                <div class="bg-dark bg-opacity-50 rounded-xl p-6">
-                    <h2 class="text-2xl font-semibold mb-6">Your Redeemed Rewards</h2>
-                    
-                    <?php if ($redeemedResult->num_rows > 0): ?>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full">
-                                <thead>
-                                    <tr class="border-b border-gray-800">
-                                        <th class="text-left py-3 px-4">Reward</th>
-                                        <th class="text-left py-3 px-4">Date Redeemed</th>
-                                        <th class="text-left py-3 px-4">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php while ($redeemed = $redeemedResult->fetch_assoc()): ?>
-                                        <tr class="border-b border-gray-800">
-                                            <td class="py-3 px-4">
-                                                <div class="font-semibold"><?php echo htmlspecialchars($redeemed['name']); ?></div>
-                                                <div class="text-sm text-gray-400"><?php echo htmlspecialchars($redeemed['description']); ?></div>
-                                            </td>
-                                            <td class="py-3 px-4"><?php echo date('M d, Y', strtotime($redeemed['redeemed_date'])); ?></td>
-                                            <td class="py-3 px-4">
-                                                <span class="<?php echo ($redeemed['status'] == 'completed') ? 'bg-green-500' : 'bg-yellow-500'; ?> bg-opacity-20 text-xs font-semibold px-2 py-1 rounded-full">
-                                                    <?php echo ucfirst($redeemed['status']); ?>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php else: ?>
-                        <p class="text-gray-400">You haven't redeemed any rewards yet.</p>
-                    <?php endif; ?>
-                </div>
-            </div>
-            
-            <!-- Right Column: Points Info and Leaderboard -->
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <div>
-                <!-- Points Summary -->
-                <div class="bg-dark bg-opacity-50 rounded-xl p-6 mb-8">
-                    <h2 class="text-2xl font-semibold mb-4">Your Points</h2>
-                    <div class="flex items-center justify-between mb-6">
-                        <span class="text-gray-300">Total Points:</span>
-                        <span class="text-3xl font-bold text-yellow-400"><?php echo $total_points; ?></span>
+                <h1 class="text-3xl font-bold mb-2">Rewards Center</h1>
+                <p class="text-gray-400">Exchange your points for exciting rewards</p>
+            </div>
+            <div class="flex items-center mt-4 md:mt-0">
+                <div class="bg-primary bg-opacity-20 p-4 rounded-xl flex items-center">
+                    <i class="fas fa-coins text-yellow-300 text-xl mr-2"></i>
+                    <div>
+                        <div class="text-xl font-bold"><?php echo number_format($total_points); ?></div>
+                        <div class="text-xs text-gray-400">Your Points</div>
                     </div>
-                    
-                    <h3 class="text-lg font-semibold mb-3">Recent Activity</h3>
-                    <?php if (!empty($pointsHistory)): ?>
-                        <ul class="space-y-3">
-                            <?php foreach ($pointsHistory as $entry): ?>
-                                <li class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-300"><?php echo htmlspecialchars($entry['activity']); ?></span>
-                                    <span class="<?php echo ($entry['points'] > 0) ? 'text-green-500' : 'text-red-500'; ?> font-semibold">
-                                        <?php echo ($entry['points'] > 0) ? '+' : ''; ?><?php echo $entry['points']; ?>
-                                    </span>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <p class="text-gray-400">No recent activity.</p>
-                    <?php endif; ?>
-                </div>
-                
-                <!-- Leaderboard -->
-                <div class="bg-dark bg-opacity-50 rounded-xl p-6">
-                    <h2 class="text-2xl font-semibold mb-4">Leaderboard</h2>
-                    
-                    <?php if (!empty($leaderboard)): ?>
-                        <ul class="space-y-4">
-                            <?php foreach ($leaderboard as $index => $user): ?>
-                                <li class="flex items-center">
-                                    <div class="w-8 h-8 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mr-3">
-                                        <?php echo $index + 1; ?>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-semibold"><?php echo htmlspecialchars($user['username']); ?></div>
-                                        <div class="text-xs text-gray-400"><?php echo ucfirst($user['user_type']); ?></div>
-                                    </div>
-                                    <div class="text-yellow-400 font-semibold"><?php echo $user['total_points']; ?></div>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <p class="text-gray-400">No users on the leaderboard yet.</p>
-                    <?php endif; ?>
                 </div>
             </div>
         </div>
+
+        <!-- Filters -->
+        <div class="bg-dark bg-opacity-50 rounded-xl p-6 mb-8">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-400 mb-2">Category</label>
+                    <select name="category" id="category" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white">
+                        <option value="all" <?php echo $category === 'all' ? 'selected' : ''; ?>>All Categories</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat); ?>" <?php echo $category === $cat ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($cat); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="sort" class="block text-sm font-medium text-gray-400 mb-2">Sort By</label>
+                    <select name="sort" id="sort" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white">
+                        <option value="newest" <?php echo $sort === 'newest' ? 'selected' : ''; ?>>Newest First</option>
+                        <option value="points_asc" <?php echo $sort === 'points_asc' ? 'selected' : ''; ?>>Points: Low to High</option>
+                        <option value="points_desc" <?php echo $sort === 'points_desc' ? 'selected' : ''; ?>>Points: High to Low</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-lg transition w-full">
+                        <i class="fas fa-filter mr-2"></i> Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Rewards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <?php if (count($available_rewards) > 0): ?>
+                <?php foreach ($available_rewards as $reward): ?>
+                    <div class="bg-dark bg-opacity-50 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition">
+                        <div class="bg-primary bg-opacity-10 p-6 flex justify-center">
+                            <div class="w-24 h-24 bg-primary bg-opacity-20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-gift text-primary text-4xl"></i>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-primary bg-opacity-20 text-primary px-3 py-1 rounded-full text-xs mr-2">
+                                    <?php echo htmlspecialchars($reward['category']); ?>
+                                </span>
+                                <?php if ($reward['quantity'] && $reward['quantity'] < 10): ?>
+                                    <span class="bg-red-500 bg-opacity-20 text-red-400 px-3 py-1 rounded-full text-xs">
+                                        Only <?php echo $reward['quantity']; ?> left
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2"><?php echo htmlspecialchars($reward['title']); ?></h3>
+                            <p class="text-gray-400 text-sm mb-4"><?php echo substr(htmlspecialchars($reward['description']), 0, 100) . '...'; ?></p>
+                            
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <i class="fas fa-coins text-yellow-300 mr-2"></i>
+                                    <span class="font-semibold"><?php echo number_format($reward['points_required']); ?></span>
+                                </div>
+                                <?php if ($total_points >= $reward['points_required']): ?>
+                                    <a href="redeem.php?id=<?php echo $reward['id']; ?>" class="bg-secondary hover:bg-opacity-90 text-white px-4 py-2 rounded-full transition text-sm">
+                                        Redeem Now
+                                    </a>
+                                <?php else: ?>
+                                    <div class="text-gray-500 text-sm">
+                                        <i class="fas fa-lock mr-1"></i> Not enough points
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="col-span-3 text-center py-12">
+                    <i class="fas fa-search text-gray-500 text-5xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">No Rewards Found</h3>
+                    <p class="text-gray-400">No rewards match your current filters. Please try different criteria.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Pagination -->
+        <?php if ($total_pages > 1): ?>
+            <div class="flex justify-center mt-8">
+                <div class="flex space-x-2">
+                    <?php if ($page > 1): ?>
+                        <a href="?page=<?php echo $page - 1; ?>&category=<?php echo $category; ?>&sort=<?php echo $sort; ?>" class="bg-dark bg-opacity-70 hover:bg-opacity-100 px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    <?php endif; ?>
+                    
+                    <?php
+                    $start_page = max(1, $page - 2);
+                    $end_page = min($total_pages, $start_page + 4);
+                    if ($end_page - $start_page < 4) {
+                        $start_page = max(1, $end_page - 4);
+                    }
+                    
+                    for ($i = $start_page; $i <= $end_page; $i++):
+                    ?>
+                        <a href="?page=<?php echo $i; ?>&category=<?php echo $category; ?>&sort=<?php echo $sort; ?>" class="px-4 py-2 rounded-lg transition <?php echo ($i == $page) ? 'bg-primary text-white' : 'bg-dark bg-opacity-70 hover:bg-opacity-100'; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+                    
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?page=<?php echo $page + 1; ?>&category=<?php echo $category; ?>&sort=<?php echo $sort; ?>" class="bg-dark bg-opacity-70 hover:bg-opacity-100 px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
-    
+
     <!-- Footer -->
-    <footer class="bg-dark bg-opacity-80 py-8 mt-16">
-        <div class="container mx-auto px-6 text-center">
-            <p class="text-gray-500">&copy; 2023 Biz-Fusion. All rights reserved.</p>
+    <footer class="bg-dark bg-opacity-80 py-8 mt-12">
+        <div class="container mx-auto px-6">
+            <div class="text-center text-gray-500">
+                <p>&copy; <?php echo date('Y'); ?> Biz-Fusion. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 </body>
-</html> 
+</html>
