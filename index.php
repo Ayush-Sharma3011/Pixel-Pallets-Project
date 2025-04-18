@@ -154,9 +154,23 @@ if ($check_db->rowCount() == 0) {
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     echo '<div class="bg-dark bg-opacity-50 p-8 rounded-xl">';
                     echo '<div class="flex items-center mb-4">';
-                    echo '<div class="w-12 h-12 bg-gray-600 rounded-full mr-4">';
+                    echo '<div class="w-12 h-12 rounded-full overflow-hidden mr-4">';
                     if (!empty($row['image_url'])) {
-                        echo '<img src="' . htmlspecialchars($row['image_url']) . '" alt="Company Logo" class="w-full h-full rounded-full object-cover">';
+                        // Check if image exists or use a fallback
+                        $image_path = $row['image_url'];
+                        if (!file_exists($image_path)) {
+                            // Use a random profile image
+                            $gender = rand(0, 1) ? 'men' : 'women';
+                            $image_id = rand(1, 99);
+                            echo '<img src="https://randomuser.me/api/portraits/'.$gender.'/'.$image_id.'.jpg" alt="Profile" class="w-full h-full object-cover">';
+                        } else {
+                            echo '<img src="' . htmlspecialchars($image_path) . '" alt="Profile" class="w-full h-full object-cover">';
+                        }
+                    } else {
+                        // Use random profile image if none provided
+                        $gender = rand(0, 1) ? 'men' : 'women';
+                        $image_id = rand(1, 99);
+                        echo '<img src="https://randomuser.me/api/portraits/'.$gender.'/'.$image_id.'.jpg" alt="Profile" class="w-full h-full object-cover">';
                     }
                     echo '</div>';
                     echo '<div>';
@@ -172,7 +186,9 @@ if ($check_db->rowCount() == 0) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="bg-dark bg-opacity-50 p-8 rounded-xl">
                 <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-gray-600 rounded-full mr-4"></div>
+                    <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Profile" class="w-full h-full object-cover">
+                    </div>
                     <div>
                         <h4 class="font-semibold">Sarah Johnson</h4>
                         <p class="text-sm text-gray-400">CEO, TechStart</p>
@@ -182,7 +198,9 @@ if ($check_db->rowCount() == 0) {
             </div>
             <div class="bg-dark bg-opacity-50 p-8 rounded-xl">
                 <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-gray-600 rounded-full mr-4"></div>
+                    <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile" class="w-full h-full object-cover">
+                    </div>
                     <div>
                         <h4 class="font-semibold">Michael Chen</h4>
                         <p class="text-sm text-gray-400">Innovation Director, Global Corp</p>
