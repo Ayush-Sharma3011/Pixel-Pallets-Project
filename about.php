@@ -128,7 +128,7 @@ $conn = $database->getConnection();
                     <img src="https://media.licdn.com/dms/image/v2/D5603AQFZZCnfF3hMBg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1725126576545?e=1750291200&v=beta&t=haV-GLRX7PHTjgeDjlU1SB7XrDHhKS7OHrSYKZ_AqT4" alt="Sarah Johnson" class="w-full h-full object-cover">
                 </div>
                 <h3 class="text-xl font-semibold mb-1">Kartik Choudhary</h3>
-                <p class="text-primary mb-3">CTO</p>
+                <p class="text-primary mb-3">CTO & Co-Founder</p>
                 <p class="text-gray-300">Tech entrepreneur with multiple successful exits and expertise in AI matching algorithms.</p>
             </div>
             <div class="bg-dark bg-opacity-50 rounded-xl p-6 text-center">
@@ -136,7 +136,7 @@ $conn = $database->getConnection();
                     <img src="https://media.licdn.com/dms/image/v2/D4D03AQE26AQx6GypUQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1695701012684?e=1750291200&v=beta&t=DG4Xq-nSmhOzkgLxHwU5jmEhdKIJ0hKhdvYvhBOHSuo" alt="David Patel" class="w-full h-full object-cover">
                 </div>
                 <h3 class="text-xl font-semibold mb-1">Rohit Kumar</h3>
-                <p class="text-primary mb-3">Head of Partnerships</p>
+                <p class="text-primary mb-3">Head of Partnerships & Management</p>
                 <p class="text-gray-300">Previously led corporate development at Fortune 500 companies with a focus on startup acquisition.</p>
             </div>
         </div>
