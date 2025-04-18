@@ -140,6 +140,16 @@ $conn = $database->getConnection();
                 <p class="text-gray-300">Previously led corporate development at Fortune 500 companies with a focus on startup acquisition.</p>
             </div>
         </div>
+        <div class="flex justify-center mt-10">
+            <div class="bg-dark bg-opacity-50 rounded-xl p-6 text-center max-w-sm">
+                <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
+                    <img src="https://media.licdn.com/dms/image/v2/D4D03AQE6vyELuUQaQQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1701763052275?e=1750291200&v=beta&t=TuC7Pvt3PZ_T86DL-yDvM5Ca25XSSZTPWqcJQVYzFYI" class="w-full h-full object-cover">
+                </div>
+                <h3 class="text-xl font-semibold mb-1">Shubham Bharadwaj</h3>
+                <p class="text-primary mb-3">SE-1</p>
+                <p class="text-gray-300">Built responsive UI components using modern web tech to ensure seamless user experience. Focused on clean code and pixel-perfect design.</p>
+            </div>
+        </div>
     </section>
 
     <!-- Values -->
