@@ -25,16 +25,16 @@ try {
         $usersExists = true;
         echo "<p>Users table already exists.</p>";
     }
-    
-    // Create users table if it doesn't exist
+
+// Create users table if it doesn't exist
     if (!$usersExists) {
         $sql = "CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
             username VARCHAR(50) NOT NULL UNIQUE,
             email VARCHAR(100) NOT NULL UNIQUE,
-            password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
             role ENUM('admin', 'user') DEFAULT 'user',
-            user_type ENUM('startup', 'corporate') NOT NULL,
+    user_type ENUM('startup', 'corporate') NOT NULL,
             company_name VARCHAR(100),
             industry VARCHAR(100),
             total_points INT DEFAULT 0,
@@ -87,7 +87,7 @@ try {
             industry_focus VARCHAR(255),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )";
         $conn->exec($sql);
         echo "<p>Corporate profiles table created successfully.</p>";
@@ -105,7 +105,7 @@ try {
             points INT NOT NULL,
             activity VARCHAR(255) NOT NULL,
             date_earned TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )";
         $conn->exec($sql);
         echo "<p>Points log table created successfully.</p>";
@@ -120,12 +120,12 @@ try {
         $sql = "CREATE TABLE IF NOT EXISTS rewards (
             id INT AUTO_INCREMENT PRIMARY KEY,
             title VARCHAR(100) NOT NULL,
-            description TEXT NOT NULL,
+    description TEXT NOT NULL,
             points_cost INT NOT NULL,
             image_url VARCHAR(255),
             user_type ENUM('startup', 'corporate', 'all') NOT NULL DEFAULT 'all',
             quantity INT NULL,
-            is_active TINYINT(1) NOT NULL DEFAULT 1,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
         )";
@@ -212,8 +212,8 @@ try {
             redemption_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             status ENUM('pending', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
             notes TEXT,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (reward_id) REFERENCES rewards(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (reward_id) REFERENCES rewards(id) ON DELETE CASCADE
         )";
         $conn->exec($sql);
         echo "<p>Reward redemptions table created successfully.</p>";

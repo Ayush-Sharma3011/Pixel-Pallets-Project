@@ -27,7 +27,7 @@
     <nav class="container mx-auto px-6 py-4">
         <div class="flex justify-between items-center">
             <div class="flex items-center">
-                <a href="index.html">
+                <a href="index.php">
                     <img src="public/images/bizfusion_refined.png" alt="Biz-Fusion Logo" class="h-10">
                 </a>
                 <span class="ml-3 text-xl font-semibold">Biz-Fusion</span>
