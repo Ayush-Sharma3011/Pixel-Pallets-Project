@@ -99,9 +99,11 @@ $partnerships = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
             <div class="hidden md:flex space-x-8">
-                <a href="corporate.php" class="hover:text-primary transition">Dashboard</a>
+                <a href="corpdash.php" class="hover:text-primary transition">Dashboard</a>
                 <a href="../lib/rewards/index.php" class="hover:text-primary transition">Rewards Center</a>
                 <a href="profile.php" class="hover:text-primary transition">Profile</a>
+                <a href="connect.php" class="hover:text-primary transition">Connect</a>
+                <a href="messages.php" class="hover:text-primary transition">Messages</a>
             </div>
         </div>
     </nav>
@@ -260,8 +262,9 @@ $partnerships = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <?php echo ucfirst($partnership['status']); ?>
                                         </span>
                                     </div>
-                                    <div class="mt-2">
+                                    <div class="mt-2 flex justify-between">
                                         <a href="partnership-details.php?id=<?php echo $partnership['id']; ?>" class="text-secondary hover:underline text-sm">View Details</a>
+                                        <a href="messages.php?partner_id=<?php echo $partnership['startup_id']; ?>" class="text-primary hover:underline text-sm">Message</a>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -269,6 +272,7 @@ $partnerships = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <a href="partnerships.php" class="block text-center text-secondary hover:underline mt-4">Manage All Partnerships</a>
                     <?php else: ?>
                         <p class="text-gray-400 text-center py-4">You don't have any partnerships yet.</p>
+                        <a href="connect.php" class="block text-center bg-secondary hover:bg-opacity-90 py-2 rounded-lg transition mt-2">Find Startups to Connect</a>
                     <?php endif; ?>
                 </div>
             </div>

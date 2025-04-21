@@ -72,9 +72,11 @@ $partnerships = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="ml-3 text-lg font-semibold">Biz-Fusion</span>
             </div>
             <div class="hidden md:flex space-x-8">
-                <a href="startup.php" class="hover:text-primary transition">Dashboard</a>
+                <a href="startdash.php" class="hover:text-primary transition">Dashboard</a>
                 <a href="../lib/rewards/index.php" class="hover:text-primary transition">Rewards Center</a>
                 <a href="profile.php" class="hover:text-primary transition">Profile</a>
+                <a href="connect.php" class="hover:text-primary transition">Connect</a>
+                <a href="messages.php" class="hover:text-primary transition">Messages</a>
             </div>
             <div class="flex items-center space-x-6">
                 <a href="#" class="text-gray-300 hover:text-primary transition">
@@ -191,8 +193,9 @@ $partnerships = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <?php echo ucfirst($partnership['status']); ?>
                                         </span>
                                     </div>
-                                    <div class="mt-2">
+                                    <div class="mt-2 flex justify-between">
                                         <a href="partnership-details.php?id=<?php echo $partnership['id']; ?>" class="text-primary hover:underline text-sm">View Details</a>
+                                        <a href="messages.php?partner_id=<?php echo $partnership['corporate_id']; ?>" class="text-secondary hover:underline text-sm">Message</a>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -200,6 +203,7 @@ $partnerships = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <a href="partnerships.php" class="block text-center text-primary hover:underline mt-4">Manage All Partnerships</a>
                     <?php else: ?>
                         <p class="text-gray-400 text-center py-4">You don't have any partnerships yet.</p>
+                        <a href="connect.php" class="block text-center bg-primary hover:bg-opacity-90 py-2 rounded-lg transition mt-2">Find Corporates to Connect</a>
                     <?php endif; ?>
                 </div>
             </div>
