@@ -252,7 +252,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <!-- Map Section -->
     <section class="container mx-auto px-6 py-12">
         <div class="bg-dark bg-opacity-50 p-4 rounded-xl">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.0958241203524!2d-122.41941568468219!3d37.77492977975926!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80858092fa133d8f%3A0xf913b661bcccb951!2sSan%20Francisco%2C%20CA%2094103!5e0!3m2!1sen!2sus!4v1654822560006!5m2!1sen!2sus" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d27273.7219521439!2d75.6370873!3d31.2977955!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1745218731338!5m2!1sen!2sin" width="100%" height="600" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
     </section>
 
