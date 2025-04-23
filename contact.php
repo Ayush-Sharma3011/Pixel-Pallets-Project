@@ -65,6 +65,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             // Attempt to execute the prepared statement
             if ($stmt->execute()) {
+                /* 
+                // Email functionality - Disabled due to local mail server configuration
+                // To enable email functionality in a production environment:
+                // 1. Configure an SMTP server or use a library like PHPMailer
+                // 2. For PHPMailer, install using: composer require phpmailer/phpmailer
+                // 3. Then implement the code below:
+                
+                // require 'vendor/autoload.php';
+                // use PHPMailer\PHPMailer\PHPMailer;
+                // use PHPMailer\PHPMailer\Exception;
+                
+                // $mail = new PHPMailer(true);
+                // try {
+                //     $mail->isSMTP();
+                //     $mail->Host = 'smtp.gmail.com';  // Your SMTP server
+                //     $mail->SMTPAuth = true;
+                //     $mail->Username = 'your-email@gmail.com';  // SMTP username
+                //     $mail->Password = 'your-password';  // SMTP password
+                //     $mail->SMTPSecure = 'tls';
+                //     $mail->Port = 587;
+                
+                //     $mail->setFrom($email, $name);
+                //     $mail->addAddress('sharmaayush300424@gmail.com');
+                //     $mail->Subject = "Biz-Fusion Contact Form: " . $subject;
+                //     $mail->Body = "You have received a new message from the Biz-Fusion contact form.\n\n".
+                //                   "Name: ".$name."\n".
+                //                   "Email: ".$email."\n".
+                //                   "Subject: ".$subject."\n".
+                //                   "Message: ".$message."\n";
+                
+                //     $mail->send();
+                // } catch (Exception $e) {
+                //     // Log error but don't show to user
+                //     error_log('Message could not be sent. Mailer Error: '. $mail->ErrorInfo);
+                // }
+                */
+                
                 // Message sent successfully
                 $success_message = "Your message has been sent. Thank you for contacting us!";
                 $name = $email = $subject = $message = "";
