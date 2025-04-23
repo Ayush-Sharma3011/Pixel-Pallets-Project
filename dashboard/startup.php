@@ -74,7 +74,7 @@ $partnerships = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="hidden md:flex space-x-8">
                 <a href="startdash.php" class="hover:text-primary transition">Dashboard</a>
                 <a href="../lib/rewards/index.php" class="hover:text-primary transition">Rewards Center</a>
-                <a href="profile.php" class="hover:text-primary transition">Profile</a>
+                <a href="startdash.php" class="hover:text-primary transition">Profile</a>
                 <a href="connect.php" class="hover:text-primary transition">Connect</a>
                 <a href="messages.php" class="hover:text-primary transition">Messages</a>
             </div>
