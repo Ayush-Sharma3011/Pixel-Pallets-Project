@@ -53,11 +53,42 @@ if ($check_db->rowCount() == 0) {
                 <a href="success-stories.php" class="hover:text-primary transition">Success Stories</a>
                 <a href="contact.php" class="hover:text-primary transition">Contact</a>
             </div>
-            <div>
+            <div class="hidden md:block">
                 <a href="login.php" class="bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-full transition">Sign In</a>
+            </div>
+            <!-- Mobile menu button -->
+            <div class="md:hidden flex items-center">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+            <div class="flex flex-col space-y-4">
+                <a href="index.php" class="text-primary transition">Home</a>
+                <a href="about.php" class="hover:text-primary transition">About</a>
+                <a href="services.php" class="hover:text-primary transition">Services</a>
+                <a href="success-stories.php" class="hover:text-primary transition">Success Stories</a>
+                <a href="contact.php" class="hover:text-primary transition">Contact</a>
+                <a href="login.php" class="bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-full transition text-center">Sign In</a>
             </div>
         </div>
     </nav>
+
+    <!-- JavaScript for mobile menu toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        });
+    </script>
 
     <!-- Hero Section -->
     <section class="container mx-auto px-6 py-16 md:py-24">

@@ -70,7 +70,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <a href="/success-stories.php" class="<?php echo $current_page == 'success-stories.php' ? 'text-primary' : 'hover:text-primary'; ?> transition">Success Stories</a>
                 <a href="/contact.php" class="<?php echo $current_page == 'contact.php' ? 'text-primary' : 'hover:text-primary'; ?> transition">Contact</a>
             </div>
-            <div>
+            <div class="hidden md:block">
                 <?php if ($is_logged_in): ?>
                     <div class="flex items-center">
                         <?php if ($user_type == 'startup'): ?>
@@ -87,5 +87,53 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <a href="/auth/login.php" class="bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-full transition">Sign In</a>
                 <?php endif; ?>
             </div>
+            <!-- Mobile menu button -->
+            <div class="md:hidden flex items-center">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
         </div>
-    </nav> 
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+            <div class="flex flex-col space-y-4">
+                <a href="/index.php" class="<?php echo $current_page == 'index.php' ? 'text-primary' : 'hover:text-primary'; ?> transition">Home</a>
+                <a href="/about.php" class="<?php echo $current_page == 'about.php' ? 'text-primary' : 'hover:text-primary'; ?> transition">About</a>
+                <a href="/services.php" class="<?php echo $current_page == 'services.php' ? 'text-primary' : 'hover:text-primary'; ?> transition">Services</a>
+                <a href="/success-stories.php" class="<?php echo $current_page == 'success-stories.php' ? 'text-primary' : 'hover:text-primary'; ?> transition">Success Stories</a>
+                <a href="/contact.php" class="<?php echo $current_page == 'contact.php' ? 'text-primary' : 'hover:text-primary'; ?> transition">Contact</a>
+                
+                <?php if ($is_logged_in): ?>
+                    <div class="pt-2 border-t border-gray-700">
+                        <?php if ($user_type == 'startup'): ?>
+                            <a href="/dashboard/startup.php" class="block mb-3 hover:text-primary transition">Dashboard</a>
+                        <?php else: ?>
+                            <a href="/dashboard/corporate.php" class="block mb-3 hover:text-primary transition">Dashboard</a>
+                        <?php endif; ?>
+                        <div class="mb-3 bg-dark bg-opacity-50 px-4 py-2 rounded-full inline-block">
+                            <span class="text-yellow-400 font-semibold"><?php echo $total_points; ?></span> points
+                        </div>
+                        <a href="/auth/logout.php" class="block bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-full transition text-center">Sign Out</a>
+                    </div>
+                <?php else: ?>
+                    <a href="/auth/login.php" class="bg-primary hover:bg-opacity-90 text-white px-6 py-2 rounded-full transition text-center mt-2">Sign In</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+
+    <!-- JavaScript for mobile menu toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html> 
